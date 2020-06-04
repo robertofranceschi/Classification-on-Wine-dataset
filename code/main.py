@@ -19,7 +19,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC, LinearSVC
 from sklearn.metrics import accuracy_score
 from sklearn.decomposition import PCA
-from sklearn.feature_selection import SelectKBest, chi2
+from sklearn.feature_selection import SelectKBest, chi2, f_classif
 
 from utils import *
 #from models import * 
@@ -59,8 +59,6 @@ if RUN_SELECT_FEATURES :
     X = wine.data[:,[9,12]] # Feature selection (best 2 features found)
 y = wine.target
 
-print(X.shape)
-print(X)
 # Show 2D Representation
 plot2Drepresentation(X,y,show=SHOW_IMAGES)
 
@@ -302,6 +300,7 @@ if SELECT_FEATURES :
     #print(wine.data[:5])
     #print(wine.feature_names)
     # best features found
-    print("best feature found: {'color_intensity' : 9, 'proline', 12} ")
+    print("best feature found: {'color_intensity' : 9, 'proline', 12} using chi2")
+    print("best feature found: {'flavanoids' : 7, 'proline', 12} using f_classif")
 
 
