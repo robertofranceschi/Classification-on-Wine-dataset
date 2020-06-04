@@ -1,2 +1,2 @@
 # Classification-on-Wine-dataset
-Shallow learning analysis, comparison of some basic classifiers on the Wine dataset using Sklearn
+In this repo, I have done a comparison of some basic classifiers on the Wine Dataset using `sklearn`.
