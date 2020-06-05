@@ -40,9 +40,9 @@ GRID_SEARCH = True     # grid search for an RBF kernel {gamma,C}
 CROSS_VALID = True     # grid search for gamma and C but this time perform 5-fold validation
 
 # Extra
-DO_PCA = True               # Principal Component Analysis
 SELECT_FEATURES = True      # Feature selection
-RUN_SELECT_FEATURES = False # If 'True' runs the classifications with the best 2 features: 'color_intensity', 'proline' (previously founded with SelectKBest feature)
+RUN_SELECT_FEATURES = None  # 1: {'color_intensity', 'proline'} 2: {} (previously founded with SelectKBest feature)
+DO_PCA = True               # Principal Component Analysis
 
 # -------------------
 
@@ -54,9 +54,14 @@ if SHOW_INFO_DATASET :
     print(wine['DESCR'])
 
 # 2. Select the first two attributes for a 2D representation of the image
-X = wine.data[:,:2]
-if RUN_SELECT_FEATURES : 
-    X = wine.data[:,[9,12]] # Feature selection (best 2 features found)
+if RUN_SELECT_FEATURES == 1 : 
+    print("Selected labels : 'color_intensity', 'proline' ")
+    X = wine.data[:,[9,12]] # Feature selection (best 2 features found with chi2) 'color_intensity', 'proline'
+elif RUN_SELECT_FEATURES == 2 :
+    print("Selected labels : 'flavanoids', 'proline' ")
+    X = wine.data[:,[6,12]] # Feature selection (best 2 features found with f_classif) 'flavanoids', 'proline'
+else : 
+    X = wine.data[:,:2]
 y = wine.target
 
 # Show 2D Representation
@@ -266,31 +271,7 @@ if KERNEL_SVM :
         print(f"> Accuracy (test set): {gridTestScore:.3f}")
 
 # Try also with different pairs of attributes
-# --- Principal Component Analysis
-if DO_PCA :
-    print("\n---- PCA ----")
-    pca = PCA(n_components=2)
-    pca.fit(X_train_val)
-    pca_train = pca.transform(X_train)
-    pca_test = pca.transform(X_test)
-
-    if KNN : 
-        clf = KNeighborsClassifier(n_neighbors=bestK).fit(pca_train, y_train)      
-        score = clf.score(pca_test,y_test)
-        print(f"KNN score: {score:.3f}")
-
-    if LINEAR_SVM : 
-        clf = LinearSVC(C=bestC_svm, max_iter=1000000) .fit(pca_train, y_train)
-        score = clf.score(pca_test,y_test)
-        print(f"linear_SVM score: {score:.3f}")
-
-    if KERNEL_SVM :
-        #todo: probabilemente SVM
-        clf = SVC(C=bestC_rbf, gamma='scale', kernel='rbf').fit(pca_train, y_train)
-        score = clf.score(pca_test,y_test)
-        print(f"kernel_SVM score: {score:.3f}") 
-
-# Feature selection
+# --- Feature selection
 if SELECT_FEATURES : 
     print("\n---- Feature selection ----")
     X_select = SelectKBest(chi2, k=2).fit_transform(wine.data, y)
@@ -302,5 +283,35 @@ if SELECT_FEATURES :
     # best features found
     print("best feature found: {'color_intensity' : 9, 'proline', 12} using chi2")
     print("best feature found: {'flavanoids' : 7, 'proline', 12} using f_classif")
+
+# --- Principal Component Analysis
+if DO_PCA :
+    print("\n---- PCA ----")
+    pca = PCA(n_components=2)
+    pca.fit(X_train_val)
+    pca_train = pca.transform(X_train)
+    pca_test = pca.transform(X_test)
+    print(F"Explained Variance: {pca.explained_variance_ratio_}")
+    print(pca.components_)
+
+    if KNN : 
+        clf = KNeighborsClassifier(n_neighbors=bestK).fit(pca_train, y_train)      
+        score = clf.score(pca_test,y_test)
+        print(f"KNN score: {score:.3f}")
+
+    if LINEAR_SVM : 
+        clf = LinearSVC(C=bestC_svm, max_iter=1000000) .fit(pca_train, y_train)
+        score = clf.score(pca_test,y_test)
+        print(f"linear_SVM score: {score:.3f}")
+        # summarize components
+        
+
+    if KERNEL_SVM :
+        #todo: probabilemente SVM
+        clf = SVC(C=bestC_rbf, gamma='scale', kernel='rbf').fit(pca_train, y_train)
+        score = clf.score(pca_test,y_test)
+        print(f"kernel_SVM score: {score:.3f}") 
+
+
 
 
